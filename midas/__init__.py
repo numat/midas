@@ -147,7 +147,7 @@ class GasDetector(object):
         # Register 40008 holds the sensor temperature in Celsius
         self.temperature = decoder.decode_16bit_int()
 
-        # Register 40009 holds number of hours remaining in cell lfe
+        # Register 40009 holds number of hours remaining in cell life
         self.cell_life = decoder.decode_16bit_uint()
 
         # Register 40010 holds the number of heartbeats (16 LSB). Skipping.
