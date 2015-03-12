@@ -172,3 +172,44 @@ class GasDetector(object):
 
     def _on_error(self, error):
         logging.log(logging.INFO, error)
+
+
+def command_line():
+    import argparse
+    import json
+    from time import time
+
+    parser = argparse.ArgumentParser(description="Read a Honeywell Midas gas "
+                                     "detector state from the command line.")
+    parser.add_argument("address", help="The IP address of the gas detector.")
+    parser.add_argument("--stream", "-s", action="store_true",
+                        help="Sends a constant stream of detector data, "
+                             "formatted as a tab-separated table.")
+    args = parser.parse_args()
+
+    detector = GasDetector(args.address, blocking=True)
+
+    if args.stream:
+        try:
+            print("time\tconcentration\tunits\talarm level\tstate\tfault\t"
+                  "temperature (C)\tflow rate (cc/min)\tlow alarm threshold\t"
+                  "high alarm threshold")
+            t0 = time()
+            while True:
+                d = detector.get()
+                if d["connected"]:
+                    print(("{time:.2f}\t{concentration:.1f}\t{units}\t"
+                           "{alarm_level}\t{state}\t{fault}\t{temperature:.1f}"
+                           "\t{flow:.1f}\t{low_alarm_threshold:.1f}\t"
+                           "{high_alarm_threshold:.1f}"
+                           ).format(time=time()-t0, **d))
+                else:
+                    print("Not connected")
+        except KeyboardInterrupt:
+            pass
+    else:
+        print(json.dumps(detector.get(), indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    command_line()
