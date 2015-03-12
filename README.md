@@ -1,7 +1,8 @@
 midas
 =====
 
-TCP/IP modbus driver for [Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
+TCP/IP modbus driver for
+[Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
 
 <p align="center">
   <img src="http://www.honeywellanalytics.com/~/media/honeywell-analytics/products/midas/images/midas.jpg" height="400" />
@@ -10,9 +11,11 @@ TCP/IP modbus driver for [Honeywell Midas gas detectors](http://www.honeywellana
 Installation
 ============
 
-#####TODO Make pypi
+```
+pip install midas
+```
 
-You can clone and build from source:
+If you don't like pip, you can also install from source:
 
 ```
 git clone https://github.com/numat/midas.git
@@ -20,11 +23,25 @@ cd midas
 python setup.py install
 ```
 
-This depends on [pymodbus](https://github.com/bashwork/pymodbus), which is **not
-compatible with Python 3**.
+This depends on [pymodbus](https://github.com/bashwork/pymodbus), which is
+**not compatible with Python 3**.
 
 Usage
 =====
+
+###Command Line
+
+To test your connection and stream real-time data, use the command-line
+interface. Read the help for more.
+
+```
+midas --help
+```
+
+###Python
+
+For more complex behavior, you can write a python script to interface with
+other sensors and actuators.
 
 ```python
 from midas import GasDetector
@@ -55,9 +72,10 @@ a dictionary of the form:
 Asynchronous
 ============
 
-The above example works for small numbers of gas detectors. At larger scales, the time spent waiting for detector responses is prohibitive. Asynchronous programming
-allows us to send out all of our requests in parallel, and then handle responses as
-they trickle in. For more information, read through
+The above example works for small numbers of gas detectors. At larger scales,
+the time spent waiting for detector responses is prohibitive. Asynchronous
+programming allows us to send out all of our requests in parallel, and then
+handle responses as they trickle in. For more information, read through
 [krondo's twisted introduction](http://krondo.com/?page_id=1327).
 
 ```python
@@ -77,11 +95,11 @@ loop.start(0.5)
 reactor.run()
 ```
 
-This looks more complex, but the advantages are well worth it at scale. Essentially,
-`sleep`ing is replaced by scheduling functions with twisted. This allows your code
-to do other things while waiting for responses.
+This looks more complex, but the advantages are well worth it at scale.
+Essentially, sleeping is replaced by scheduling functions with twisted. This
+allows your code to do other things while waiting for responses.
 
-We try hiding some of the mess of asynchronous programming here. This makes some
-assumptions on use case. Namely, the `get` method is not guaranteed to be
+We try hiding some of the mess of asynchronous programming here. This makes
+some assumptions on use case. Namely, the `get` method is not guaranteed to be
 updated by the time you read it. If this sounds like an issue for you, you can
 dive into the async logic and create your own callbacks.
