@@ -1,8 +1,11 @@
 midas
 =====
 
-Python driver for [Honeywell's Midas gas detector](http://www.honeywellanalytics.com/en/products/Midas).
-Communicates over a network through a TCP / IP modbus connection.
+TCP/IP modbus driver for [Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
+
+<p align="center">
+  <img src="http://www.honeywellanalytics.com/~/media/honeywell-analytics/products/midas/images/midas.jpg" height="400" />
+</p>
 
 Installation
 ============
