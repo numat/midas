@@ -171,7 +171,8 @@ class GasDetector(object):
             self.high_alarm_threshold *= 1000
 
     def _on_error(self, error):
-        logging.log(logging.INFO, error)
+        logging.log(logging.ERROR, error)
+        self._connect()
 
 
 def command_line():
