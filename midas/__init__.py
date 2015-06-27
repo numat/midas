@@ -28,21 +28,21 @@ class GasDetector(object):
     """
     # Map register bits to sensor states
     # Further information can be found in the Honeywell Midas technical manual
-    monitor_state_options = ["Warmup",
-                             "Monitoring",
-                             "Monitoring with alarms inhibited",
-                             "Monitoring with alarms and faults inhibited",
-                             "Monitoring every response inhibited",
-                             "Alarm or fault simulation",
-                             "Bump test mode",
-                             "4-20 mA loop calibration mode",
-                             "Non-analog calibration mode"]
-    fault_status_options = ["No fault",
-                            "Maintenance fault",
-                            "Instrument fault",
-                            "Maintenance and instrument faults"]
-    concentration_unit_options = ["ppm", "ppb", "% volume", "% LEL", "mA"]
-    alarm_level_options = ["none", "low", "high"]
+    monitor_state_options = ['Warmup',
+                             'Monitoring',
+                             'Monitoring with alarms inhibited',
+                             'Monitoring with alarms and faults inhibited',
+                             'Monitoring every response inhibited',
+                             'Alarm or fault simulation',
+                             'Bump test mode',
+                             '4-20 mA loop calibration mode',
+                             'Non-analog calibration mode']
+    fault_status_options = ['No fault',
+                            'Maintenance fault',
+                            'Instrument fault',
+                            'Maintenance and instrument faults']
+    concentration_unit_options = ['ppm', 'ppb', '% volume', '% LEL', 'mA']
+    alarm_level_options = ['none', 'low', 'high']
 
     def __init__(self, address, blocking=False, timeout=2):
         """Connects to modbus on initialization."""
@@ -71,20 +71,20 @@ class GasDetector(object):
         if self.blocking:
             result = self.client.read_holding_registers(address=0, count=16)
             self._on_response(result)
-        if not hasattr(self, "concentration"):
-            return {"url": self.address, "connected": self.connected}
-        return {"concentration": self.concentration,
-                "units": self.units,
-                "state": self.monitor_state,
-                "fault": self.fault_status,
-                "temperature": self.temperature,
-                "life": self.cell_life,
-                "flow": self.flow_rate,
-                "alarm_level": self.alarm_level,
-                "low_alarm_threshold": self.low_alarm_threshold,
-                "high_alarm_threshold": self.high_alarm_threshold,
-                "url": self.address,
-                "connected": self.connected}
+        if not hasattr(self, 'concentration'):
+            return {'url': self.address, 'connected': self.connected}
+        return {'concentration': self.concentration,
+                'units': self.units,
+                'state': self.monitor_state,
+                'fault': self.fault_status,
+                'temperature': self.temperature,
+                'life': self.cell_life,
+                'flow': self.flow_rate,
+                'alarm_level': self.alarm_level,
+                'low_alarm_threshold': self.low_alarm_threshold,
+                'high_alarm_threshold': self.high_alarm_threshold,
+                'url': self.address,
+                'connected': self.connected}
 
     def _connect(self):
         """Initializes modbus connection through twisted framework."""
@@ -108,7 +108,7 @@ class GasDetector(object):
         self.connected = True
         self.last_response = time()
 
-        register_bytes = "".join(pack("<H", x) for x in result.registers)
+        register_bytes = "".join(pack('<H', x) for x in result.registers)
         decoder = BinaryPayloadDecoder(register_bytes)
 
         # Register 40001 is a collection of alarm status signals
@@ -165,7 +165,7 @@ class GasDetector(object):
 
         # Despite what the manual says, thresholds are always reported in ppm.
         # Let's fix that to match the concentration units.
-        if self.units == "ppb":
+        if self.units == 'ppb':
             self.concentration *= 1000
             self.low_alarm_threshold *= 1000
             self.high_alarm_threshold *= 1000
@@ -182,8 +182,8 @@ def command_line():
 
     parser = argparse.ArgumentParser(description="Read a Honeywell Midas gas "
                                      "detector state from the command line.")
-    parser.add_argument("address", help="The IP address of the gas detector.")
-    parser.add_argument("--stream", "-s", action="store_true",
+    parser.add_argument('address', help="The IP address of the gas detector.")
+    parser.add_argument('--stream', '-s', action='store_true',
                         help="Sends a constant stream of detector data, "
                              "formatted as a tab-separated table.")
     args = parser.parse_args()
@@ -192,17 +192,17 @@ def command_line():
 
     if args.stream:
         try:
-            print("time\tconcentration\tunits\talarm level\tstate\tfault\t"
-                  "temperature (C)\tflow rate (cc/min)\tlow alarm threshold\t"
-                  "high alarm threshold")
+            print('time\tconcentration\tunits\talarm level\tstate\tfault\t'
+                  'temperature (C)\tflow rate (cc/min)\tlow alarm threshold\t'
+                  'high alarm threshold')
             t0 = time()
             while True:
                 d = detector.get()
-                if d["connected"]:
-                    print(("{time:.2f}\t{concentration:.1f}\t{units}\t"
-                           "{alarm_level}\t{state}\t{fault}\t{temperature:.1f}"
-                           "\t{flow:.1f}\t{low_alarm_threshold:.1f}\t"
-                           "{high_alarm_threshold:.1f}"
+                if d['connected']:
+                    print(('{time:.2f}\t{concentration:.1f}\t{units}\t'
+                           '{alarm_level}\t{state}\t{fault}\t{temperature:.1f}'
+                           '\t{flow:.1f}\t{low_alarm_threshold:.1f}\t'
+                           '{high_alarm_threshold:.1f}'
                            ).format(time=time()-t0, **d))
                 else:
                     print("Not connected")
@@ -212,5 +212,5 @@ def command_line():
         print(json.dumps(detector.get(), indent=2, sort_keys=True))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     command_line()
