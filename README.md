@@ -1,12 +1,15 @@
 midas
 =====
 
-TCP/IP modbus driver for
+Python driver for
 [Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
 
 <p align="center">
   <img src="http://www.honeywellanalytics.com/~/media/honeywell-analytics/products/midas/images/midas.jpg" height="400" />
 </p>
+
+Plug the Midas into a PoE-capable switch, set the IP address on the front panel,
+and use this library to read its state from any computer.
 
 Installation
 ============
@@ -54,18 +57,18 @@ a dictionary of the form:
 
 ```python
 {
-  "alarm_level": "none",       # Can be "none", "low", or "high"
+  "alarm": "none",             # Can be "none", "low", or "high"
   "concentration": 0.0,        # Current gas concentration reading
   "connected": True,           # Monitors heartbeat for connection
   "fault": "No fault",         # Can be any option in `gas_detector.fault_status_options`
   "flow": 514,                 # Flow rate, in cc / minute
-  "high_alarm_threshold": 2.0, # Threshold concentration for high alarm trigger
-  "life": 16027,               # Hours until cartridge replacement required
-  "low_alarm_threshold": 1.0,  # Threshold concentration for low alarm trigger
+  "high-alarm threshold": 2.0, # Threshold concentration for high alarm trigger
+  "ip": "192.168.1.192",       # IP address of connection, can be used to link to Honeywell's own web interface
+  "life": 538.95,              # Days until cartridge replacement required
+  "low-alarm threshold": 1.0,  # Threshold concentration for low alarm trigger
   "state": "Monitoring",       # Can be any option in `gas_detector.monitoring_status_options`
   "temperature": 26,           # Detector temperature, in celsius
-  "units": "ppm",              # Units for concentration values
-  "url": "192.168.1.193"       # IP address of connection, can be used to link to Honeywell's own web interface
+  "units": "ppm"               # Units for concentration values
 }
 ```
 
@@ -82,15 +85,20 @@ handle responses as they trickle in. For more information, read through
 from midas import GasDetector
 from twisted.internet import reactor, task
 
-gas_detectors = [GasDetector(address="192.168.1.%d" % i, blocking=False)
+# As an example, assume we have six detectors in 192.168.1.[192-197].
+gas_detectors = [GasDetector(ip_address='192.168.1.{}'.format(i))
                  for i in range(192, 198)]
 
-def f():
-    for gas_detector in gas_detectors:
-        print(gas_detector.get())  # Grabs most recent server response
-        gas_detector.update()      # Sends request for data
+def on_response(response):
+    """This function gets run whenever a device responds."""
+    print(response)
 
-loop = task.LoopingCall(f)
+def loop():
+    """This function will be called in an infinite loop by twisted."""
+    for detector in gas_detectors:
+        detector.get(on_response)
+
+loop = task.LoopingCall(loop)
 loop.start(0.5)
 reactor.run()
 ```
@@ -98,8 +106,3 @@ reactor.run()
 This looks more complex, but the advantages are well worth it at scale.
 Essentially, sleeping is replaced by scheduling functions with twisted. This
 allows your code to do other things while waiting for responses.
-
-We try hiding some of the mess of asynchronous programming here. This makes
-some assumptions on use case. Namely, the `get` method is not guaranteed to be
-updated by the time you read it. If this sounds like an issue for you, you can
-dive into the async logic and create your own callbacks.
