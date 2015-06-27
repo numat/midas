@@ -11,19 +11,6 @@ Python driver for
 Installation
 ============
 
-###Device
-
- * Open front cover and remove internal packaging.
- * Install gas sensor cartridge and close cover.
- * Plug the device into a [PoE+](https://en.wikipedia.org/wiki/Power_over_Ethernet)-capable switch.
- * Set the IP address on the front panel in the `net` submenu.
-   - If you use DHCP, set `AU Y`. Add the MAC to your routing table.
-   - Otherwise, `AU N`, and then set the four address digits.
- * Reboot.
- * To test, access the device's website by typing the IP address into a browser.
-
-###Software
-
 ```
 pip install midas
 ```

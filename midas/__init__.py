@@ -42,10 +42,10 @@ class GasDetector(object):
     concentration_unit_options = ['ppm', 'ppb', '% volume', '% LEL', 'mA']
     alarm_level_options = ['none', 'low', 'high']
 
-    def __init__(self, ip_address):
+    def __init__(self, address):
         """Connects to modbus on initialization."""
         self.client = None
-        self.ip = ip_address
+        self.ip = address
         self._connect()
 
     def get(self, callback=None, *args, **kwargs):
