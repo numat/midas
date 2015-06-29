@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="midas",
-    version="0.2.1",
+    version="0.2.2",
     description="Python driver for Honeywell Midas gas dectectors.",
     url="http://github.com/numat/midas/",
     author="Patrick Fuller",
