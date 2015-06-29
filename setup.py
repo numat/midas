@@ -2,12 +2,14 @@ from setuptools import setup
 
 setup(
     name="midas",
-    version="0.2.2",
+    version="0.2.3",
     description="Python driver for Honeywell Midas gas dectectors.",
     url="http://github.com/numat/midas/",
     author="Patrick Fuller",
     author_email="pat@numat-tech.com",
     packages=['midas'],
+    package_data={'midas': ['midas/faults.csv']},
+    include_package_data=True,
     install_requires=['pymodbus'],
     entry_points={
         'console_scripts': [('midas = midas:command_line')]
