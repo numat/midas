@@ -1,0 +1,33 @@
+Fault code,Description,Condition,Recovery
+m9,Simulated maintenance fault,User has generated a simulated fault.,Reset simulated fault.
+m10,Over range,A large concentration has been detected. The Midas requires an independent confirmation that the gas hazard is gone.,Supply known clean air to the Midas and clear this fault.
+m11,User calibration expired,The user specified calibration interval has elapsed.,Perform zero and span calibrations. Increase span calibration period.
+m12,Cartridge expires soon,Cartridge is old and will expire soon.,Replace the cartridge with a new cartridge.
+m13,Flow error,Midas is no longer able to regulate flow (high or low flow condition).,Check filters and pump. Check pressure at inlet and outlet and assure they are within specification.
+m14,Interferent present,An interferent is degrading the ability of the Midas to detect gas.,Check application.
+m15,Temperature near limit,Temperature within 2 Celsius of limit.,Check installation environment.
+m16,Baseline fault,Sensor baseline has drifted.,Check for background gas concentration, temperature or humidity fluctuations. Perform zero calibration. Replace cartridge.
+m17,Inhibit timeout,Transmitter has been in inhibit mode too long.,Resume monitoring or increase timeout value.
+F39,Simulated fault,User has generated a simulated fault.,Reset simulated fault.
+F40,Sensor overdosed,Sensor has been exposed to high gas concentrations for long periods.,Replace cartridge.
+F41,Baseline fault,Sensor baseline has drifted.,Check for background gas concentration, temperature or humidity fluctuations. Perform zero calibration. Replace cartridge.
+F42,Calibration expired,Too long since last calibration.,Replace or calibrate the cartridge.
+F43,Cartridge expired,Cartridge is too old.,Replace cartridge.
+F44,Cell failure,Cartridge has failed Reflex check.,Replace cartridge.
+F45,Stabilization timeout,Cartridge has failed to stabilize.,If temperature or humidity shocks exist, precondition the cartridge. Check for background gas concentration. Replace cartridge.
+F46,Cartridge analog failure,Electronic Failure or gas concentration greater than full scale.,Replace cartridge.
+F47,Cartridge memory invalid,Checksum error.,Replace cartridge.
+F48,Cartridge absent,No communications.,Reseat cartridge. Replace cartridge.
+F49,Cartridge wrong type,Cartridge type found to be incorrect after boot-up.,Replace cartridge or press ‘3’ accept if correct.
+F80,Temperature limits exceeded,Temperature is outside limits ,Check installation environment.
+F81,Flow fail,Flow <70% of nominal for 15 seconds.,Check filters. Check for kinked tubing, Replace pump.
+F82,Excessive electrical noise,Internal electronics repeatedly noisy.,Check grounding of Midas chassis. Check termination of cable shields. Relocate the Midas further from noise sources. Add ferrite inductors to cables.
+F83,Pyrolyzer fail,Pyrolyzer fails to heat.,Check electrical connection to pyrolyzer. Replace pyrolyzer.
+F84,Misc. transmitter fault,Transmitter is defective.,Service or replace Midas.
+F86,Coprocessor fail,Coprocessor is damaged.,Contact Honeywell Analytics Service.
+F87,Pyrolyzer temp limits exceeded,Pyrolyzer temperature exceeded.,Clean pyrolyzer cooling vents. Contact Honeywell Analytics Service.
+F88,Pyrolyzer heater fail,Pyrolyzer heater failed.,Contact Honeywell Analytics Service. Replace the pyrolyzer.
+F89,Pyrolyzer power unreg,Target power not achieved within specified time span.,If 24VDC power check, 21.6 < V in < 26.4 Contact Honeywell Analytics Service. Replace pyrolyzer.
+F90,Pyrolyzer heater mismatch,Different pyrolyzer type required.,Contact Honeywell Analytics Service.
+F91,HTP module required,Check that MIDAS-S-CFX or MIDAS-E-CFX is installed for the high temperature pyrolyzer version.,Change to HT Pyrolyzer.
+F92,0P3 pyrolyzer module failure,0P3 pyrolyzer failed to get up to temperature, 0P3 pyrolyzer flow is out-of-range, or 0P3 pyrolyzer internal failure.,Replace pyrolyzer heater and check flow connections between Midas and 0P3 pyrolyzer.

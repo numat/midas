@@ -40,16 +40,19 @@ $ midas 192.168.1.192
   "alarm": "none",
   "concentration": 0.0,
   "connected": true,
-  "fault": "No fault",
-  "flow": 508,
+  "fault": {
+    "status": "No fault"
+  },
+  "flow": 495,
   "high-alarm threshold": 2.0,
   "ip": "192.168.1.192",
-  "life": 538.96,
+  "life": 537.0,
   "low-alarm threshold": 1.0,
-  "state": "Monitoring",
-  "temperature": 26,
+  "state": "Alarm or fault simulation",
+  "temperature": 27,
   "units": "ppm"
 }
+
 ```
 
 or stream a table of data with the `--stream` flag. See `midas --help`
@@ -74,7 +77,13 @@ a dictionary of the form:
   'alarm': 'none',             # Can be 'none', 'low', or 'high'
   'concentration': 0.0,        # Current gas concentration reading
   'connected': True,           # Monitors heartbeat for connection
-  'fault': 'No fault',         # Can be any option in `gas_detector.fault_status_options`
+  'fault': {                   # Fault data, when applicable
+    'code': 'F39',
+    'condition': 'User has generated a simulated fault.',
+    'description': 'Simulated fault',
+    'recovery': 'Reset simulated fault.',
+    'status': 'Instrument fault'
+  },
   'flow': 514,                 # Flow rate, in cc / minute
   'high-alarm threshold': 2.0, # Threshold concentration for high alarm trigger
   'ip': '192.168.1.192',       # IP address of connection, can be used to link to Honeywell's own web interface

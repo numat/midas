@@ -5,6 +5,8 @@ A Python driver for Honeywell's Midas gas detector, using TCP/IP modbus.
 Distributed under the GNU General Public License v2
 Copyright (C) 2015 NuMat Technologies
 """
+import csv
+import os
 from struct import pack
 import logging
 
@@ -13,6 +15,31 @@ from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
 
 from twisted.internet import reactor, protocol
+
+# Map register bits to sensor states
+# Further information can be found in the Honeywell Midas technical manual
+alarm_level_options = ['none', 'low', 'high']
+concentration_unit_options = ['ppm', 'ppb', '% volume', '% LEL', 'mA']
+monitor_state_options = ['Warmup',
+                         'Monitoring',
+                         'Monitoring with alarms inhibited',
+                         'Monitoring with alarms and faults inhibited',
+                         'Monitoring every response inhibited',
+                         'Alarm or fault simulation',
+                         'Bump test mode',
+                         '4-20 mA loop calibration mode',
+                         'Non-analog calibration mode']
+fault_status_options = ['No fault',
+                        'Maintenance fault',
+                        'Instrument fault',
+                        'Maintenance and instrument faults']
+
+root = os.path.normpath(os.path.dirname(__file__))
+with open(os.path.join(root, 'faults.csv')) as in_file:
+    reader = csv.reader(in_file)
+    next(reader)
+    faults = {row[0]: {'description': row[1], 'condition': row[2],
+                       'recovery': row[3]} for row in reader}
 
 
 class GasDetector(object):
@@ -24,24 +51,6 @@ class GasDetector(object):
     the device response comes through. If unspecified, this class blocks until
     a response is received.
     """
-    # Map register bits to sensor states
-    # Further information can be found in the Honeywell Midas technical manual
-    monitor_state_options = ['Warmup',
-                             'Monitoring',
-                             'Monitoring with alarms inhibited',
-                             'Monitoring with alarms and faults inhibited',
-                             'Monitoring every response inhibited',
-                             'Alarm or fault simulation',
-                             'Bump test mode',
-                             '4-20 mA loop calibration mode',
-                             'Non-analog calibration mode']
-    fault_status_options = ['No fault',
-                            'Maintenance fault',
-                            'Instrument fault',
-                            'Maintenance and instrument faults']
-    concentration_unit_options = ['ppm', 'ppb', '% volume', '% LEL', 'mA']
-    alarm_level_options = ['none', 'low', 'high']
-
     def __init__(self, address):
         """Connects to modbus on initialization."""
         self.client = None
@@ -91,13 +100,13 @@ class GasDetector(object):
         reg_40001 = decoder.decode_bits() + decoder.decode_bits()
         # Bits 0-3 map to the monitor state
         monitor_integer = sum(1 << i for i, b in enumerate(reg_40001[:4]) if b)
-        result['state'] = self.monitor_state_options[monitor_integer]
+        result['state'] = monitor_state_options[monitor_integer]
         # Bits 4-5 map to fault status
         fault_integer = sum(1 << i for i, b in enumerate(reg_40001[4:6]) if b)
-        result['fault'] = self.fault_status_options[fault_integer]
+        result['fault'] = {'status': fault_status_options[fault_integer]}
         # Bits 6 and 7 tell if low and high alarms are active
         low, high = reg_40001[6:8]
-        result['alarm'] = self.alarm_level_options[low + high]
+        result['alarm'] = alarm_level_options[low + high]
         # Bits 8-10 tell if internal sensor relays 1-3 are energized. Skipping.
         # Bit 11 is a heartbeat bit that toggles every two seconds. Skipping.
         # Bit 12 tells if relays are under modbus control. Skipping.
@@ -110,14 +119,22 @@ class GasDetector(object):
         result['concentration'] = decoder.decode_32bit_float()
 
         # Register 40005 is the concentration as an int. Skipping.
-        # Register 40006 is the number of the most important fault. Skipping.
+        decoder._pointer += 2
+
+        # Register 40006 is the number of the most important fault.
+        fault_number = decoder.decode_16bit_uint()
+        if fault_number != 0:
+            code = ('m' if fault_number < 30 else 'F') + str(fault_number)
+            result['fault']['code'] = code
+            result['fault'].update(faults[code])
+
         # Register 40007 has info related to 40005 in the first byte. Skipping.
-        decoder._pointer += 5
+        decoder._pointer += 1
 
         # Register 40007 holds the concentration unit in the second byte
         # Instead of being an int, it's the position of the up bit
         unit_bit = decoder.decode_bits().index(True)
-        result['units'] = self.concentration_unit_options[unit_bit]
+        result['units'] = concentration_unit_options[unit_bit]
 
         # Register 40008 holds the sensor temperature in Celsius
         result['temperature'] = decoder.decode_16bit_int()
