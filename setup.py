@@ -22,7 +22,6 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Topic :: Scientific/Engineering :: Human Machine Interfaces',
-        'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
+        'Topic :: Scientific/Engineering :: Human Machine Interfaces'
     ]
 )

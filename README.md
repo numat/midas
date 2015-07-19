@@ -69,8 +69,8 @@ gas_detector = GasDetector(ip_address='192.168.1.192')
 print(gas_detector.get())
 ```
 
-If the detector is operating at that IP address, this should return an output
-a dictionary of the form:
+If the detector is operating at that IP address, this should output a
+dictionary of the form:
 
 ```python
 {
