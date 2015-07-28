@@ -13,6 +13,7 @@ import logging
 from pymodbus.client.async import ModbusClientProtocol
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.pdu import ExceptionResponse
 
 from twisted.internet import reactor, protocol
 
@@ -91,6 +92,9 @@ class GasDetector(object):
 
     def _process(self, response):
         """Parses the response, returning a dictionary."""
+        if isinstance(response, ExceptionResponse):
+            return self._on_error(response)
+
         result = {'ip': self.ip, 'connected': True}
 
         register_bytes = ''.join(pack('<H', x) for x in response.registers)
