@@ -85,7 +85,7 @@ class GasDetector(object):
         self.client = client
 
     def _on_error(self, error):
-        logging.log(logging.ERROR, error)
+        logging.debug(error)
         self._connect()
         return {'ip': self.ip, 'connected': False}
 
