@@ -56,17 +56,28 @@ class GasDetector(object):
         """Connects to modbus on initialization."""
         self.client = None
         self.ip = address
+        self._reconnect_callback = None
         self._connect()
 
-    def get(self, callback=None, *args, **kwargs):
+    def get(self, callback=None, timeout=3, *args, **kwargs):
         """Returns the current state through Modbus TCP/IP."""
         if callback:
             if self.client is None:
-                callback(self._on_error("Not connected"), *args, **kwargs)
+                callback(self._on_error("Not connected."), *args, **kwargs)
             else:
                 d = self.client.read_holding_registers(address=0, count=16)
                 d.addCallbacks(self._process, self._on_error)
-                d.addCallbacks(lambda r: callback(r, *args, **kwargs))
+
+                def f(result):
+                    c.cancel()
+                    callback(result, *args, **kwargs)
+
+                def cancel():
+                    d.cancel()
+                    callback(self._on_error("Timed out."), *args, **kwargs)
+
+                d.addCallbacks(f, f)
+                c = reactor.callLater(timeout, cancel)
         else:
             try:
                 with ModbusTcpClient(self.ip) as client:
@@ -80,14 +91,16 @@ class GasDetector(object):
         deferred = protocol.ClientCreator(reactor, ModbusClientProtocol
                                           ).connectTCP(self.ip, 502)
         deferred.addCallbacks(self._on_connection, self._on_error)
+        self._reconnect_callback = None
 
     def _on_connection(self, client):
         """Saves reference to client on connection."""
         self.client = client
 
     def _on_error(self, error):
-        logging.debug(error)
-        self._connect()
+        if self._reconnect_callback is None:
+            logging.debug(error)
+            self._reconnect_callback = reactor.callLater(1, self._connect)
         return {'ip': self.ip, 'connected': False}
 
     def _process(self, response):
