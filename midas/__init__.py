@@ -16,6 +16,7 @@ from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.pdu import ExceptionResponse
 
 from twisted.internet import reactor, protocol
+from twisted.protocols.policies import TimeoutMixin
 
 # Map register bits to sensor states
 # Further information can be found in the Honeywell Midas technical manual
@@ -43,6 +44,20 @@ with open(os.path.join(root, 'faults.csv')) as in_file:
                        'recovery': row[3]} for row in reader}
 
 
+class ModbusTimeoutProtocol(ModbusClientProtocol, TimeoutMixin):
+    """Extends pymodbus' protocol to include timeout handling."""
+    def connectionMade(self):
+        self.setTimeout(5)
+        super(ModbusTimeoutProtocol, self).connectionMade()
+
+    def dataReceived(self, data):
+        self.resetTimeout()
+        super(ModbusTimeoutProtocol, self).dataReceived(data)
+
+    def timeoutConnection(self):
+        self.transport.abortConnection()
+
+
 class GasDetector(object):
     """Python driver for [Honeywell Midas Gas Detector](http://www.honeywell
     analytics.com/en/products/Midas).
@@ -59,7 +74,7 @@ class GasDetector(object):
         self._reconnect_callback = None
         self._connect()
 
-    def get(self, callback=None, timeout=3, *args, **kwargs):
+    def get(self, callback=None, *args, **kwargs):
         """Returns the current state through Modbus TCP/IP."""
         if callback:
             if self.client is None:
@@ -69,15 +84,9 @@ class GasDetector(object):
                 d.addCallbacks(self._process, self._on_error)
 
                 def f(result):
-                    c.cancel()
                     callback(result, *args, **kwargs)
 
-                def cancel():
-                    d.cancel()
-                    callback(self._on_error("Timed out."), *args, **kwargs)
-
-                d.addCallbacks(f, f)
-                c = reactor.callLater(timeout, cancel)
+                d.addCallbacks(f)
         else:
             try:
                 with ModbusTcpClient(self.ip) as client:
@@ -88,7 +97,7 @@ class GasDetector(object):
 
     def _connect(self):
         """Initializes modbus connection through twisted framework."""
-        deferred = protocol.ClientCreator(reactor, ModbusClientProtocol
+        deferred = protocol.ClientCreator(reactor, ModbusTimeoutProtocol
                                           ).connectTCP(self.ip, 502)
         deferred.addCallbacks(self._on_connection, self._on_error)
         self._reconnect_callback = None
