@@ -215,11 +215,11 @@ def command_line():
             while True:
                 d = detector.get()
                 if d['connected']:
-                    print(('{time:.2f}\t{concentration:.1f}\t{units}\t'
-                           '{alarm}\t{state}\t{fault}\t{temperature:.1f}'
+                    print(('{t:.2f}\t{concentration:.1f}\t{units}\t'
+                           '{alarm}\t{state}\t{f}\t{temperature:.1f}'
                            '\t{flow:.1f}\t{low-alarm threshold:.1f}\t'
                            '{high-alarm threshold:.1f}'
-                           ).format(time=time()-t0, **d))
+                           ).format(t=time()-t0, f=d['fault']['status'], **d))
                 else:
                     print("Not connected")
         except KeyboardInterrupt:
