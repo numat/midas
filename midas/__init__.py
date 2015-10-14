@@ -13,7 +13,6 @@ import logging
 from pymodbus.client.async import ModbusClientProtocol
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.pdu import ExceptionResponse
 
 from twisted.internet import reactor
 from twisted.internet.protocol import ReconnectingClientFactory
@@ -46,6 +45,7 @@ with open(os.path.join(root, 'faults.csv')) as in_file:
 
 class Factory(ReconnectingClientFactory):
     protocol = ModbusClientProtocol
+    maxDelay = 30
 
     def __init__(self):
         self.client = None
@@ -64,8 +64,12 @@ class Factory(ReconnectingClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         self.client = None
-        logging.error('Midas connection failed. Reason:\n{}'.format(
-                      reason.getErrorMessage()))
+        if self.retries < 20:
+            logging.error('Midas reconnection failed. Reason:\n{}'.format(
+                          reason.getErrorMessage()))
+        elif self.retries == 20:
+            logging.error('Midas reconnection failed. Continuing reconnection '
+                          'attempts in the background.')
         ReconnectingClientFactory.clientConnectionFailed(self, connector,
                                                          reason)
 
@@ -91,13 +95,22 @@ class GasDetector(object):
             if self.factory.client is None:
                 callback({'ip': self.ip, 'connected': False}, *args, **kwargs)
             else:
-                def f(result):
-                    callback(result, *args, **kwargs)
-
                 d = self.factory.client.read_holding_registers(address=0,
                                                                count=16)
-                d.addCallbacks(self._process)
-                d.addCallbacks(f)
+                d.addCallbacks(self._process, self._on_error)
+                hanging = {'status': True}
+
+                def f(result):
+                    hanging['status'] = False
+                    callback(result, *args, **kwargs)
+                d.addCallback(f)
+
+                def hanging_check():
+                    if hanging['status']:
+                        self.factory.client.transport.loseConnection()
+                        self._on_error("Timed out.")
+                reactor.callLater(3, hanging_check)
+
         else:
             try:
                 with ModbusTcpClient(self.ip) as client:
@@ -106,12 +119,13 @@ class GasDetector(object):
             except:
                 return {'ip': self.ip, 'connected': False}
 
+    def _on_error(self, reason):
+        """Fired on request error. Resets the connection."""
+        logging.error(reason)
+        return {'ip': self.ip, 'connected': False}
+
     def _process(self, response):
         """Parses the response, returning a dictionary."""
-        if isinstance(response, ExceptionResponse):
-            logging.debug(response)
-            return {'ip': self.ip, 'connected': False}
-
         result = {'ip': self.ip, 'connected': True}
 
         register_bytes = ''.join(pack('<H', x) for x in response.registers)
