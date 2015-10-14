@@ -108,7 +108,7 @@ class GasDetector(object):
                 def hanging_check():
                     if hanging['status']:
                         self.factory.client.transport.loseConnection()
-                        self._on_error("Timed out.")
+                        callback(self._on_error("Timed out."), *args, **kwargs)
                 reactor.callLater(3, hanging_check)
 
         else:
