@@ -53,18 +53,21 @@ class Factory(ReconnectingClientFactory):
 
     def buildProtocol(self, address):
         self.resetDelay()
-        self.client = super(Factory, self).buildProtocol(self, address)
+        self.client = ReconnectingClientFactory.buildProtocol(self, address)
         return self.client
 
     def clientConnectionLost(self, connector, reason):
-        logging.error('Midas connection lost. Reason:\n' + reason)
         self.client = None
-        super(Factory, self).clientConnectionLost(self, connector, reason)
+        logging.error('Midas connection lost. Reason:\n{}'.format(
+                      reason.getErrorMessage()))
+        ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
-        logging.error('Midas connection failed. Reason:\n' + reason)
         self.client = None
-        super(Factory, self).clientConnectionFailed(self, connector, reason)
+        logging.error('Midas connection failed. Reason:\n{}'.format(
+                      reason.getErrorMessage()))
+        ReconnectingClientFactory.clientConnectionFailed(self, connector,
+                                                         reason)
 
 
 class GasDetector(object):
