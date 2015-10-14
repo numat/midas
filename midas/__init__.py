@@ -15,8 +15,8 @@ from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.pdu import ExceptionResponse
 
-from twisted.internet import reactor, protocol
-from twisted.protocols.policies import TimeoutMixin
+from twisted.internet import reactor
+from twisted.internet.protocol import ReconnectingClientFactory
 
 # Map register bits to sensor states
 # Further information can be found in the Honeywell Midas technical manual
@@ -44,18 +44,27 @@ with open(os.path.join(root, 'faults.csv')) as in_file:
                        'recovery': row[3]} for row in reader}
 
 
-class ModbusTimeoutProtocol(ModbusClientProtocol, TimeoutMixin):
-    """Extends pymodbus' protocol to include timeout handling."""
-    def connectionMade(self):
-        self.setTimeout(5)
-        super(ModbusTimeoutProtocol, self).connectionMade()
+class Factory(ReconnectingClientFactory):
+    protocol = ModbusClientProtocol
 
-    def dataReceived(self, data):
-        self.resetTimeout()
-        super(ModbusTimeoutProtocol, self).dataReceived(data)
+    def __init__(self):
+        self.client = None
+        ReconnectingClientFactory()
 
-    def timeoutConnection(self):
-        self.transport.abortConnection()
+    def buildProtocol(self, address):
+        self.resetDelay()
+        self.client = super(Factory, self).buildProtocol(self, address)
+        return self.client
+
+    def clientConnectionLost(self, connector, reason):
+        logging.error('Midas connection lost. Reason:\n' + reason)
+        self.client = None
+        super(Factory, self).clientConnectionLost(self, connector, reason)
+
+    def clientConnectionFailed(self, connector, reason):
+        logging.error('Midas connection failed. Reason:\n' + reason)
+        self.client = None
+        super(Factory, self).clientConnectionFailed(self, connector, reason)
 
 
 class GasDetector(object):
@@ -69,53 +78,36 @@ class GasDetector(object):
     """
     def __init__(self, address):
         """Connects to modbus on initialization."""
-        self.client = None
         self.ip = address
-        self._reconnect_callback = None
-        self._connect()
+        self.factory = Factory()
+        reactor.connectTCP(address, 502, self.factory)
 
     def get(self, callback=None, *args, **kwargs):
         """Returns the current state through Modbus TCP/IP."""
         if callback:
-            if self.client is None:
-                callback(self._on_error("Not connected."), *args, **kwargs)
+            if self.factory.client is None:
+                callback({'ip': self.ip, 'connected': False}, *args, **kwargs)
             else:
-                d = self.client.read_holding_registers(address=0, count=16)
-                d.addCallbacks(self._process, self._on_error)
-
                 def f(result):
                     callback(result, *args, **kwargs)
 
+                d = self.factory.client.read_holding_registers(address=0,
+                                                               count=16)
+                d.addCallbacks(self._process)
                 d.addCallbacks(f)
         else:
             try:
                 with ModbusTcpClient(self.ip) as client:
                     res = client.read_holding_registers(address=0, count=16)
                 return self._process(res)
-            except Exception as e:
-                return self._on_error(e)
-
-    def _connect(self):
-        """Initializes modbus connection through twisted framework."""
-        deferred = protocol.ClientCreator(reactor, ModbusTimeoutProtocol
-                                          ).connectTCP(self.ip, 502)
-        deferred.addCallbacks(self._on_connection, self._on_error)
-        self._reconnect_callback = None
-
-    def _on_connection(self, client):
-        """Saves reference to client on connection."""
-        self.client = client
-
-    def _on_error(self, error):
-        if self._reconnect_callback is None:
-            logging.debug(error)
-            self._reconnect_callback = reactor.callLater(1, self._connect)
-        return {'ip': self.ip, 'connected': False}
+            except:
+                return {'ip': self.ip, 'connected': False}
 
     def _process(self, response):
         """Parses the response, returning a dictionary."""
         if isinstance(response, ExceptionResponse):
-            return self._on_error(response)
+            logging.debug(response)
+            return {'ip': self.ip, 'connected': False}
 
         result = {'ip': self.ip, 'connected': True}
 
@@ -221,7 +213,7 @@ def command_line():
                            '{high-alarm threshold:.1f}'
                            ).format(t=time()-t0, f=d['fault']['status'], **d))
                 else:
-                    print("Not connected")
+                    break
         except KeyboardInterrupt:
             pass
     else:
