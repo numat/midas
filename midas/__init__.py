@@ -46,24 +46,27 @@ with open(os.path.join(root, 'faults.csv')) as in_file:
 class Factory(ReconnectingClientFactory):
     protocol = ModbusClientProtocol
     maxDelay = 30
+    initialDelay = 3.0
 
     def __init__(self):
+        self.connected = False
         self.client = None
         ReconnectingClientFactory()
 
     def buildProtocol(self, address):
         self.resetDelay()
         self.client = ReconnectingClientFactory.buildProtocol(self, address)
+        self.connected = True
         return self.client
 
     def clientConnectionLost(self, connector, reason):
-        self.client = None
+        self.connected = False
         logging.error('Midas connection lost. Reason:\n{}'.format(
                       reason.getErrorMessage()))
         ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
-        self.client = None
+        self.connected = False
         if self.retries < 20:
             logging.error('Midas reconnection failed. Reason:\n{}'.format(
                           reason.getErrorMessage()))
@@ -92,9 +95,7 @@ class GasDetector(object):
     def get(self, callback=None, *args, **kwargs):
         """Returns the current state through Modbus TCP/IP."""
         if callback:
-            if self.factory.client is None:
-                callback({'ip': self.ip, 'connected': False}, *args, **kwargs)
-            else:
+            if self.factory.connected:
                 d = self.factory.client.read_holding_registers(address=0,
                                                                count=16)
                 d.addCallbacks(self._process, self._on_error)
@@ -107,10 +108,10 @@ class GasDetector(object):
 
                 def hanging_check():
                     if hanging['status']:
-                        self.factory.client.transport.loseConnection()
                         callback(self._on_error("Timed out."), *args, **kwargs)
                 reactor.callLater(3, hanging_check)
-
+            else:
+                callback({'ip': self.ip, 'connected': False}, *args, **kwargs)
         else:
             try:
                 with ModbusTcpClient(self.ip) as client:
