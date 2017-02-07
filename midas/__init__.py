@@ -8,14 +8,20 @@ Copyright (C) 2015 NuMat Technologies
 import csv
 import os
 from struct import pack
+import sys
 import logging
-
-from pymodbus.client.async import ModbusClientProtocol
-from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.payload import BinaryPayloadDecoder
 
 from twisted.internet import reactor
 from twisted.internet.protocol import ReconnectingClientFactory
+
+if (sys.version_info > (3, 0)):
+    from pymodbus3.client.async import ModbusClientProtocol
+    from pymodbus3.client.sync import ModbusTcpClient
+    from pymodbus3.payload import BinaryPayloadDecoder
+else:
+    from pymodbus.client.async import ModbusClientProtocol
+    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.payload import BinaryPayloadDecoder
 
 # Map register bits to sensor states
 # Further information can be found in the Honeywell Midas technical manual
@@ -129,7 +135,7 @@ class GasDetector(object):
         """Parses the response, returning a dictionary."""
         result = {'ip': self.ip, 'connected': True}
 
-        register_bytes = ''.join(pack('<H', x) for x in response.registers)
+        register_bytes = b''.join(pack('<H', x) for x in response.registers)
         decoder = BinaryPayloadDecoder(register_bytes)
 
         # Register 40001 is a collection of alarm status signals
