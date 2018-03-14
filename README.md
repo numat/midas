@@ -29,7 +29,7 @@ This depends on [pymodbus](https://github.com/bashwork/pymodbus), which is
 Usage
 =====
 
-###Command Line
+### Command Line
 
 To test your connection and stream real-time data, use the command-line
 interface. You can read the state with
@@ -58,7 +58,7 @@ $ midas 192.168.1.192
 or stream a table of data with the `--stream` flag. See `midas --help`
 for more.
 
-###Python
+### Python
 
 For more complex behavior, you can write a python script to interface with
 other sensors and actuators.
@@ -95,7 +95,7 @@ dictionary of the form:
 }
 ```
 
-###Asynchronous
+### Asynchronous
 
 The above example works for small numbers of gas detectors. At larger scales,
 the time spent waiting for detector responses is prohibitive. Asynchronous
