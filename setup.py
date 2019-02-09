@@ -6,7 +6,7 @@ with open('README.md', 'r') as in_file:
 
 setup(
     name="midas",
-    version="0.3.1",
+    version="0.3.2",
     description="Python driver for Honeywell Midas gas dectectors.",
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -14,8 +14,7 @@ setup(
     author="Patrick Fuller",
     author_email="pat@numat-tech.com",
     packages=['midas'],
-    package_data={'midas': ['midas/faults.csv']},
-    include_package_data=True,
+    package_data={'midas': ['faults.csv']},
     install_requires=[
         'pymodbus==2.2.0rc1'
     ],
