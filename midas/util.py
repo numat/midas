@@ -6,6 +6,7 @@ Copyright (C) 2019 NuMat Technologies
 import asyncio
 
 from pymodbus.client.asynchronous.asyncio import ReconnectingAsyncioModbusTcpClient
+import pymodbus.exceptions
 
 
 class AsyncioModbusClient(object):
@@ -42,7 +43,54 @@ class AsyncioModbusClient(object):
         self.modbus = self.client.protocol
         self.open = True
 
-    async def _request(self, function, args):
+    async def read_coils(self, address, count):
+        """Read a modbus coil."""
+        return await self._request(self.modbus.read_coils, address, count)
+
+    async def read_registers(self, address, count):
+        """Read modbus registers.
+
+        The Modbus protocol doesn't allow responses longer than 250 bytes
+        (ie. 125 registers, 62 DF addresses), which this function manages by
+        chunking larger requests.
+        """
+        registers = []
+        while count > 124:
+            r = await self._request(self.modbus.read_holding_registers, address, 124)
+            registers += r.registers
+            address, count = address + 124, count - 124
+        r = await self._request(self.modbus.read_holding_registers, address, count)
+        registers += r.registers
+        return registers
+
+    async def write_coil(self, address, value):
+        """Write modbus coils."""
+        await self._request(self.modbus.write_coil, address, value)
+
+    async def write_coils(self, address, values):
+        """Write modbus coils."""
+        await self._request(self.modbus.write_coils, address, values)
+
+    async def write_register(self, address, value, skip_encode=False):
+        """Write a modbus register."""
+        await self._request(self.modbus.write_registers,
+                            address, value, skip_encode=skip_encode)
+
+    async def write_registers(self, address, values, skip_encode=False):
+        """Write modbus registers.
+
+        The Modbus protocol doesn't allow requests longer than 250 bytes
+        (ie. 125 registers, 62 DF addresses), which this function manages by
+        chunking larger requests.
+        """
+        while len(values) > 62:
+            await self._request(self.modbus.write_registers,
+                                address, values, skip_encode=skip_encode)
+            address, values = address + 124, values[62:]
+        await self._request(self.modbus.write_registers,
+                            address, values, skip_encode=skip_encode)
+
+    async def _request(self, function, *args, **kwargs):
         """Send a request to the device and awaits a response.
 
         This mainly ensures that requests are sent serially, as the Modbus
@@ -52,14 +100,14 @@ class AsyncioModbusClient(object):
         exist, other logic will have to be added to either prevent or manage
         race conditions.
         """
-        while self.waiting:
-            await asyncio.sleep(0.1)
         if not self.open:
             await self._connect()
-        if not self.open:
+        while self.waiting:
+            await asyncio.sleep(0.1)
+        if not self.modbus.connected:
             raise TimeoutError("Not connected to device.")
         try:
-            future = function(*args)
+            future = function(*args, **kwargs)
         except AttributeError:
             raise TimeoutError("Not connected to device.")
         self.waiting = True
@@ -72,6 +120,8 @@ class AsyncioModbusClient(object):
                 self.client.protocol_lost_connection(self.modbus)
                 self.open = False
             raise TimeoutError(e)
+        except pymodbus.exceptions.ConnectionException as e:
+            raise ConnectionError(e)
         finally:
             self.waiting = False
 

@@ -65,16 +65,14 @@ class GasDetector(AsyncioModbusClient):
     async def get(self):
         """Get current state from the Midas gas detector."""
         try:
-            return self._parse(
-                await self._request(self.modbus.read_holding_registers, (0, 16))
-            )
+            return self._parse(await self.read_registers(0, 16))
         except TimeoutError:
             return {'ip': self.ip, 'connected': False}
 
-    def _parse(self, response):
+    def _parse(self, registers):
         """Parse the response, returning a dictionary."""
         result = {'ip': self.ip, 'connected': True}
-        decoder = BinaryPayloadDecoder.fromRegisters(response.registers,
+        decoder = BinaryPayloadDecoder.fromRegisters(registers,
                                                      byteorder=Endian.Big,
                                                      wordorder=Endian.Little)
         # Register 40001 is a collection of alarm status signals
