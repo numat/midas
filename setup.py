@@ -6,8 +6,8 @@ with open('README.md', 'r') as in_file:
 
 setup(
     name="midas",
-    version="0.3.5",
-    description="Python driver for Honeywell Midas gas dectectors.",
+    version="0.4.0",
+    description="Python driver for Honeywell Midas gas detectors.",
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="http://github.com/numat/midas/",

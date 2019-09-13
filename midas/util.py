@@ -72,7 +72,7 @@ class AsyncioModbusClient(object):
 
     async def write_register(self, address, value, skip_encode=False):
         """Write a modbus register."""
-        await self._request('write_registers', address, value, skip_encode=skip_encode)
+        return await self._request('write_registers', address, value, skip_encode=skip_encode)
 
     async def write_registers(self, address, values, skip_encode=False):
         """Write modbus registers.
