@@ -71,3 +71,9 @@ dictionary of the form:
   'units': 'ppm'               # Units for concentration values
 }
 ```
+
+Additionally, there are four commands which can be sent to the device
+* Clear all alarms and faults - `detector.clear_alarms_and_faults()`
+* Inhibit alarms - `detector.inhibit_alarms()`
+* Inhibit alarms and faults - `detector.inhibit_alarms_and_faults()`
+* Turn off inhibition - `detector.remove_inhibit()`
