@@ -36,7 +36,10 @@ class AsyncioModbusClient(object):
     async def _connect(self):
         """Start asynchronous reconnect loop."""
         self.waiting = True
-        await self.client.start(self.ip)
+        try:
+            await asyncio.wait_for(self.client.start(self.ip), self.timeout)
+        except asyncio.TimeoutError:
+            pass
         self.waiting = False
         if self.client.protocol is None:
             raise IOError("Could not connect to '{}'.".format(self.ip))
