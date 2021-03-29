@@ -1,7 +1,7 @@
 midas
 =====
 
-Python ≥3.5 driver for [Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
+Python ≥3.6 driver for [Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
 
 <p align="center">
   <img src="http://www.honeywellanalytics.com/~/media/honeywell-analytics/products/midas/images/midas.jpg" height="400" />
