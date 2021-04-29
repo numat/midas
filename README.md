@@ -4,7 +4,7 @@ midas
 Python ≥3.6 driver for [Honeywell Midas gas detectors](http://www.honeywellanalytics.com/en/products/Midas).
 
 <p align="center">
-  <img src="http://www.honeywellanalytics.com/~/media/honeywell-analytics/products/midas/images/midas.jpg" height="400" />
+  <img src="https://s7d1.scene7.com/is/image/Honeywell65/Midas" height="400" />
 </p>
 
 Installation
