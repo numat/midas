@@ -70,19 +70,19 @@ class GasDetector(AsyncioModbusClient):
             return {'ip': self.ip, 'connected': False}
 
     async def reset_alarms_and_faults(self):
-        """Reset all alarms and faults"""
+        """Reset all alarms and faults."""
         return await self.write_registers(20, (0x015E, 0x3626))
 
     async def inhibit_alarms(self):
-        """Inhibits alarms from triggering"""
+        """Inhibit alarms from triggering."""
         return await self.write_registers(20, (0x025E, 0x3626))
 
     async def inhibit_alarms_and_faults(self):
-        """Inhibits alarms and faults from triggering"""
+        """Inhibit alarms and faults from triggering."""
         return await self.write_registers(20, (0x035E, 0x3626))
 
     async def remove_inhibit(self):
-        """Cancels the inhibit state"""
+        """Cancel the inhibit state."""
         return await self.write_registers(20, (0x055E, 0x3626))
 
     def _parse(self, registers):
