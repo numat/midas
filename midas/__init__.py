@@ -23,7 +23,7 @@ def command_line():
         async with GasDetector(args.address) as detector:
             print(json.dumps(await detector.get(), indent=4, sort_keys=True))
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(get())
     loop.close()
 
