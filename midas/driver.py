@@ -64,10 +64,7 @@ class GasDetector(AsyncioModbusClient):
 
     async def get(self):
         """Get current state from the Midas gas detector."""
-        try:
-            return self._parse(await self.read_registers(0, 16))
-        except TimeoutError:
-            return {'ip': self.ip, 'connected': False}
+        return self._parse(await self.read_registers(0, 16))
 
     async def reset_alarms_and_faults(self):
         """Reset all alarms and faults."""
