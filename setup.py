@@ -26,6 +26,13 @@ setup(
         'pymodbus[serial]>=2.4.0; python_version == "3.9"',
         'pymodbus[serial]>=3.0.0; python_version >= "3.10"',
     ],
+    extras_require={
+        'test': [
+            'pytest',
+            'pytest-cov',
+            'pytest-asyncio',
+        ],
+    },
     entry_points={
         'console_scripts': [('midas = midas:command_line')]
     },
