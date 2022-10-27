@@ -108,7 +108,7 @@ class AsyncioModbusClient(object):
         await self.connectTask
         async with self.lock:
             if not self.client.connected:
-                raise TimeoutError("Not connected to Midas.")
+                raise ConnectionError("Not connected to Midas.")
             future = getattr(self.client.protocol, method)(*args, **kwargs)
             try:
                 return await asyncio.wait_for(future, timeout=self.timeout)
