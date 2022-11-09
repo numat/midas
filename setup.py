@@ -22,9 +22,9 @@ setup(
     package_data={'midas': ['faults.csv']},
     install_requires=[
         'pymodbus>=2.4.0,<3; python_version == "3.7"',
-        'pymodbus[serial]>=2.4.0; python_version == "3.8"',
-        'pymodbus[serial]>=2.4.0; python_version == "3.9"',
-        'pymodbus[serial]>=3.0.0; python_version >= "3.10"',
+        'pymodbus>=2.4.0; python_version == "3.8"',
+        'pymodbus>=2.4.0; python_version == "3.9"',
+        'pymodbus>=3.0.2; python_version >= "3.10"',
     ],
     extras_require={
         'test': [
