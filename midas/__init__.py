@@ -8,7 +8,7 @@ Copyright (C) 2019 NuMat Technologies
 from midas.driver import GasDetector
 
 
-def command_line():
+def command_line(args=None):
     """Command-line tool for Midas gas detector communication."""
     import argparse
     import asyncio
@@ -17,13 +17,13 @@ def command_line():
     parser = argparse.ArgumentParser(description="Read a Honeywell Midas gas "
                                      "detector state from the command line.")
     parser.add_argument('address', help="The IP address of the gas detector.")
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     async def get():
         async with GasDetector(args.address) as detector:
             print(json.dumps(await detector.get(), indent=4, sort_keys=True))
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(get())
     loop.close()
 
