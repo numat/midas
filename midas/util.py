@@ -8,7 +8,8 @@ import asyncio
 try:
     from pymodbus.client import AsyncModbusTcpClient  # 3.x
 except ImportError:  # 2.4.x - 2.5.x
-    from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTcpClient
+    from pymodbus.client.asynchronous.async_io import (  # type: ignore
+        ReconnectingAsyncioModbusTcpClient)
 import pymodbus.exceptions
 
 
@@ -44,8 +45,8 @@ class AsyncioModbusClient(object):
             try:
                 try:
                     await asyncio.wait_for(self.client.connect(), timeout=self.timeout)  # 3.x
-                except AttributeError:
-                    await self.client.start(self.ip)  # 2.4.x - 2.5.x
+                except AttributeError:  # 2.4.x - 2.5.x
+                    await self.client.start(self.ip)  # type: ignore
             except Exception:
                 raise IOError(f"Could not connect to '{self.ip}'.")
 
@@ -109,14 +110,14 @@ class AsyncioModbusClient(object):
         async with self.lock:
             if not self.client.connected:
                 raise ConnectionError("Not connected to Midas.")
-            future = getattr(self.client.protocol, method)(*args, **kwargs)
+            future = getattr(self.client.protocol, method)(*args, **kwargs)  # type: ignore
             try:
                 return await asyncio.wait_for(future, timeout=self.timeout)
             except asyncio.TimeoutError as e:
                 if self.client.connected and hasattr(self, 'modbus'):
                     # This came from reading through the pymodbus@python3 source
                     # Problem was that the driver was not detecting disconnect
-                    self.client.protocol_lost_connection(self.modbus)
+                    self.client.protocol_lost_connection(self.modbus)  # type: ignore
                 raise TimeoutError(e)
             except pymodbus.exceptions.ConnectionException as e:
                 raise ConnectionError(e)
@@ -125,5 +126,5 @@ class AsyncioModbusClient(object):
         """Close the TCP connection."""
         try:
             await self.client.close()  # 3.x
-        except AttributeError:
-            self.client.stop()  # 2.4.x - 2.5.x
+        except AttributeError:  # 2.4.x - 2.5.x
+            self.client.stop()  # type: ignore
