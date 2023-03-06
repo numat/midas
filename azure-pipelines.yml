@@ -34,6 +34,14 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
+    flake8 midas
+  displayName: 'Lint Code'
+
+- script: |
+    mypy midas
+  displayName: 'Check types with mypy'
+
+- script: |
     cd midas
     pytest --junitxml=../reports/test-coverage.xml  --cov=. --cov-report=xml
   env:
