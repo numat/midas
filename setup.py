@@ -3,15 +3,15 @@ from sys import version_info
 
 from setuptools import setup
 
-if version_info < (3, 7):
-    raise ImportError("This module requires Python >=3.7.  Use 0.4.4 for Python3.6")
+if version_info < (3, 8):
+    raise ImportError("This module requires Python >=3.8.  Use 0.5.1 for Python3.7")
 
 with open('README.md', 'r') as in_file:
     long_description = in_file.read()
 
 setup(
     name="midas",
-    version="0.5.1",
+    version="0.6.0",
     description="Python driver for Honeywell Midas gas detectors.",
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -46,7 +46,6 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
