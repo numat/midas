@@ -13,7 +13,7 @@ except ImportError:  # 2.4.x - 2.5.x
 import pymodbus.exceptions
 
 
-class AsyncioModbusClient(object):
+class AsyncioModbusClient:
     """A generic asyncio client.
 
     This expands upon the pymodbus AsyncModbusTcpClient by
@@ -49,7 +49,7 @@ class AsyncioModbusClient(object):
                 except AttributeError:  # 2.4.x - 2.5.x
                     await self.client.start(self.ip)  # type: ignore
             except Exception:
-                raise IOError(f"Could not connect to '{self.ip}'.")
+                raise OSError(f"Could not connect to '{self.ip}'.")
 
     async def read_coils(self, address, count):
         """Read modbus output coils (0 address prefix)."""

@@ -6,7 +6,7 @@ from setuptools import setup
 if version_info < (3, 8):
     raise ImportError("This module requires Python >=3.8.  Use 0.5.1 for Python3.7")
 
-with open('README.md', 'r') as in_file:
+with open('README.md') as in_file:
     long_description = in_file.read()
 
 setup(
@@ -28,12 +28,11 @@ setup(
     ],
     extras_require={
         'test': [
-            'flake8>=3,<7',
-            'flake8-docstrings==1.*',
             'mypy>=1.1.1',
             'pytest',
             'pytest-cov',
             'pytest-asyncio',
+            'ruff==0.0.261',
         ],
     },
     entry_points={
