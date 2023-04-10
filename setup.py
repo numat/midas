@@ -6,7 +6,7 @@ from setuptools import setup
 if version_info < (3, 8):
     raise ImportError("This module requires Python >=3.8.  Use 0.5.1 for Python3.7")
 
-with open('README.md', 'r') as in_file:
+with open('README.md') as in_file:
     long_description = in_file.read()
 
 setup(
