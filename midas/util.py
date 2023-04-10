@@ -9,7 +9,8 @@ try:
     from pymodbus.client import AsyncModbusTcpClient  # 3.x
 except ImportError:  # 2.4.x - 2.5.x
     from pymodbus.client.asynchronous.async_io import (  # type: ignore
-        ReconnectingAsyncioModbusTcpClient)
+        ReconnectingAsyncioModbusTcpClient,
+    )
 import pymodbus.exceptions
 
 
