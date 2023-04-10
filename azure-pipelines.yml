@@ -32,8 +32,8 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    flake8 midas
-  displayName: 'Lint Code'
+    ruff .
+  displayName: 'Lint code with ruff'
 
 - script: |
     mypy midas
