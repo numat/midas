@@ -9,11 +9,21 @@ ignore = [
     "UP036",
 ]
 exclude = ["venv*"]
-select = ["C", "D", "E", "F", "I", "UP", "YTT", "PT", "W"]
-# "SIM" flake-simplify
-# "ARG" flake8-unused args
-# "B" bandit
-# "RUF" ruff base config
+select = [
+    "B",   # bandit
+    "C",   # complexity
+    "D",   # docstrings
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "PT",  # flake8-pytest
+    "RUF", # ruff base config
+    "SIM", # flake-simplify
+    "UP",  # pyupgrade
+    "W",   # pycodestyle warnings
+    "YTT", # flake8-2020
+    # "ARG", # flake8-unused args
+]
 [pydocstyle]
 convention = "pep257"
 [flake8-unused-arguments]
