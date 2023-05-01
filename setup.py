@@ -19,7 +19,7 @@ setup(
     author="Patrick Fuller",
     author_email="pat@numat-tech.com",
     packages=['midas'],
-    package_data={'midas': ['faults.csv']},
+    package_data={'midas': ['faults.csv', 'py.typed']},
     install_requires=[
         'pymodbus>=2.4.0,<3; python_version == "3.7"',
         'pymodbus>=2.4.0; python_version == "3.8"',

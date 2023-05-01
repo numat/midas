@@ -4,9 +4,12 @@ Distributed under the GNU General Public License v2
 Copyright (C) 2022 NuMat Technologies
 """
 import asyncio
+from typing import Any, Literal, Union, overload
 
 try:
     from pymodbus.client import AsyncModbusTcpClient  # 3.x
+    from pymodbus.pdu import ModbusResponse
+    from pymodbus.register_read_message import ReadHoldingRegistersResponse
 except ImportError:  # 2.4.x - 2.5.x
     from pymodbus.client.asynchronous.async_io import (  # type: ignore
         ReconnectingAsyncioModbusTcpClient,
@@ -21,7 +24,7 @@ class AsyncioModbusClient:
     including standard timeouts, async context manager, and queued requests.
     """
 
-    def __init__(self, address, timeout=1):
+    def __init__(self, address: str, timeout: float = 1) -> None:
         """Set up communication parameters."""
         self.ip = address
         self.timeout = timeout
@@ -33,15 +36,15 @@ class AsyncioModbusClient:
         self.lock = asyncio.Lock()
         self.connectTask = asyncio.create_task(self._connect())
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Any:
         """Asynchronously connect with the context manager."""
         return self
 
-    async def __aexit__(self, *args):
+    async def __aexit__(self, *args: Any) -> None:
         """Provide exit to the context manager."""
         await self._close()
 
-    async def _connect(self):
+    async def _connect(self) -> None:
         """Start asynchronous reconnect loop."""
         async with self.lock:
             try:
@@ -52,18 +55,14 @@ class AsyncioModbusClient:
             except Exception as e:
                 raise OSError(f"Could not connect to '{self.ip}'.") from e
 
-    async def read_coils(self, address, count):
-        """Read modbus output coils (0 address prefix)."""
-        return await self._request('read_coils', address, count)
-
-    async def read_registers(self, address, count):
+    async def read_registers(self, address: int, count: int) -> list:
         """Read modbus registers.
 
         The Modbus protocol doesn't allow responses longer than 250 bytes
         (ie. 125 registers, 62 DF addresses), which this function manages by
         chunking larger requests.
         """
-        registers = []
+        registers: list = []
         while count > 124:
             r = await self._request('read_holding_registers', address, 124)
             registers += r.registers
@@ -72,19 +71,21 @@ class AsyncioModbusClient:
         registers += r.registers
         return registers
 
-    async def write_coil(self, address, value):
-        """Write modbus coils."""
+    async def write_coil(self, address: int, value: bool) -> None:
+        """Write a modbus coil."""
         await self._request('write_coil', address, value)
 
-    async def write_coils(self, address, values):
+    async def write_coils(self, address: int, values: list) -> None:
         """Write modbus coils."""
         await self._request('write_coils', address, values)
 
-    async def write_register(self, address, value, skip_encode=False):
+    async def write_register(self, address: int, value: int,
+                             skip_encode: bool = False) -> None:
         """Write a modbus register."""
         await self._request('write_register', address, value, skip_encode=skip_encode)
 
-    async def write_registers(self, address, values, skip_encode=False):
+    async def write_registers(self, address: int, values: Union[list, tuple],
+                              skip_encode: bool = False) -> None:
         """Write modbus registers.
 
         The Modbus protocol doesn't allow requests longer than 250 bytes
@@ -98,7 +99,17 @@ class AsyncioModbusClient:
         await self._request('write_registers',
                             address, values, skip_encode=skip_encode)
 
-    async def _request(self, method, *args, **kwargs):
+    @overload
+    async def _request(self, method: Literal['read_holding_registers'],
+                       *args: Any, **kwargs: Any) -> ReadHoldingRegistersResponse:
+        ...
+
+    @overload
+    async def _request(self, method: str,
+                       *args: Any, **kwargs: Any) -> ModbusResponse:
+        ...
+
+    async def _request(self, method: str, *args: Any, **kwargs: Any) -> ModbusResponse:
         """Send a request to the device and awaits a response.
 
         This mainly ensures that requests are sent serially, as the Modbus
@@ -121,7 +132,7 @@ class AsyncioModbusClient:
             except (asyncio.TimeoutError, pymodbus.exceptions.ConnectionException) as e:
                 raise TimeoutError("Not connected to Midas.") from e
 
-    async def _close(self):
+    async def _close(self) -> None:
         """Close the TCP connection."""
         try:
             await self.client.close()  # 3.x
