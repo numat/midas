@@ -4,10 +4,13 @@ Distributed under the GNU General Public License v2
 Copyright (C) 2022 NuMat Technologies
 """
 import asyncio
-from typing import Any, Union
+from typing import Any, Literal, Union, overload
 
 try:
+    from pymodbus.bit_read_message import ReadCoilsResponse
     from pymodbus.client import AsyncModbusTcpClient  # 3.x
+    from pymodbus.pdu import ModbusResponse
+    from pymodbus.register_read_message import ReadHoldingRegistersResponse
 except ImportError:  # 2.4.x - 2.5.x
     from pymodbus.client.asynchronous.async_io import (  # type: ignore
         ReconnectingAsyncioModbusTcpClient,
@@ -55,7 +58,11 @@ class AsyncioModbusClient:
 
     async def read_coils(self, address: int, count: int) -> list:
         """Read modbus output coils (0 address prefix)."""
-        return await self._request('read_coils', address, count)
+        response = await self._request('read_coils', address, count)
+        if isinstance(response, list):
+            return response
+        else:
+            raise OSError("Could not read coils.")
 
     async def read_registers(self, address: int, count: int) -> list:
         """Read modbus registers.
@@ -101,7 +108,22 @@ class AsyncioModbusClient:
         await self._request('write_registers',
                             address, values, skip_encode=skip_encode)
 
-    async def _request(self, method, *args, **kwargs):
+    @overload
+    async def _request(self, method: Literal['read_holding_registers'],
+                       *args: Any, **kwargs: Any) -> ReadHoldingRegistersResponse:
+        ...
+
+    @overload
+    async def _request(self, method: Literal['read_coils'],
+                       *args: Any, **kwargs: Any) -> ReadCoilsResponse:
+        ...
+
+    @overload
+    async def _request(self, method: str,
+                       *args: Any, **kwargs: Any) -> ModbusResponse:
+        ...
+
+    async def _request(self, method: str, *args: Any, **kwargs: Any) -> ModbusResponse:
         """Send a request to the device and awaits a response.
 
         This mainly ensures that requests are sent serially, as the Modbus

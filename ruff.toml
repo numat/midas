@@ -23,6 +23,7 @@ select = [
     "YTT", # flake8-2020
     # "ARG", # flake8-unused args
 ]
+target-version = "py38"
 [pydocstyle]
 convention = "pep257"
 [flake8-unused-arguments]
