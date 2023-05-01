@@ -2,6 +2,7 @@
 
 import asyncio
 from random import random
+from typing import Any
 from unittest.mock import MagicMock
 
 from midas.driver import GasDetector as realGasDetector
@@ -10,7 +11,7 @@ from midas.driver import GasDetector as realGasDetector
 class AsyncClientMock(MagicMock):
     """Magic mock that works with async methods."""
 
-    async def __call__(self, *args, **kwargs):
+    async def __call__(self, *args, **kwargs):  # type: ignore
         """Convert regular mocks into into an async coroutine."""
         return super().__call__(*args, **kwargs)
 
@@ -18,7 +19,7 @@ class AsyncClientMock(MagicMock):
 class GasDetector(realGasDetector):
     """Mock interface to the Midas gas detector."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Set an inital mocked state."""
         self.client = AsyncClientMock()
         self.state = {
@@ -36,23 +37,23 @@ class GasDetector(realGasDetector):
             "high-alarm threshold": 8,
         }
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr):  # type: ignore
         """Return False for any undefined method."""
 
-        def handler(*args, **kwargs):
+        def handler(*args, **kwargs):  # type: ignore
             return False
 
         return handler
 
-    async def get(self):
+    async def get(self) -> dict:
         """Return a mock state with the same object structure."""
         await asyncio.sleep(random() * 0.1)
         return self.state
 
-    async def inhibit_alarms(self):
+    async def inhibit_alarms(self) -> None:
         """Inhibit alarms from triggering."""
         self.state["state"] = "Monitoring with alarms inhibited"
 
-    async def remove_inhibit(self):
+    async def remove_inhibit(self) -> None:
         """Cancel the inhibit state."""
         self.state["state"] = "Monitoring"
