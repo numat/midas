@@ -7,7 +7,6 @@ import asyncio
 from typing import Any, Literal, Union, overload
 
 try:
-    from pymodbus.bit_read_message import ReadCoilsResponse
     from pymodbus.client import AsyncModbusTcpClient  # 3.x
     from pymodbus.pdu import ModbusResponse
     from pymodbus.register_read_message import ReadHoldingRegistersResponse
@@ -56,14 +55,6 @@ class AsyncioModbusClient:
             except Exception as e:
                 raise OSError(f"Could not connect to '{self.ip}'.") from e
 
-    async def read_coils(self, address: int, count: int) -> list:
-        """Read modbus output coils (0 address prefix)."""
-        response = await self._request('read_coils', address, count)
-        if isinstance(response, list):
-            return response
-        else:
-            raise OSError("Could not read coils.")
-
     async def read_registers(self, address: int, count: int) -> list:
         """Read modbus registers.
 
@@ -111,11 +102,6 @@ class AsyncioModbusClient:
     @overload
     async def _request(self, method: Literal['read_holding_registers'],
                        *args: Any, **kwargs: Any) -> ReadHoldingRegistersResponse:
-        ...
-
-    @overload
-    async def _request(self, method: Literal['read_coils'],
-                       *args: Any, **kwargs: Any) -> ReadCoilsResponse:
         ...
 
     @overload
