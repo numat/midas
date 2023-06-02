@@ -4,7 +4,7 @@ Distributed under the GNU General Public License v2
 Copyright (C) 2022 NuMat Technologies
 """
 import asyncio
-from typing import Any, Literal, Union, overload
+from typing import Any, Literal, TypeVar, Union, overload
 
 try:
     from pymodbus.client import AsyncModbusTcpClient  # 3.x
@@ -14,6 +14,9 @@ except ImportError:  # 2.4.x - 2.5.x
     from pymodbus.client.asynchronous.async_io import (  # type: ignore
         ReconnectingAsyncioModbusTcpClient,
     )
+    ReadHoldingRegistersResponse = TypeVar('ReadHoldingRegistersResponse')  # type: ignore
+    ModbusResponse = TypeVar('ModbusResponse')  # type: ignore
+
 import pymodbus.exceptions
 
 
