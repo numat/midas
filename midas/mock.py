@@ -15,6 +15,10 @@ class AsyncClientMock(MagicMock):
         """Convert regular mocks into into an async coroutine."""
         return super().__call__(*args, **kwargs)
 
+    def close(self) -> None:
+        """Close the connection."""
+        ...
+
 
 class GasDetector(realGasDetector):
     """Mock interface to the Midas gas detector."""
