@@ -11,13 +11,15 @@ with open('README.md') as in_file:
 
 setup(
     name="midas",
-    version="0.6.1",
+    version="0.6.2",
     description="Python driver for Honeywell Midas gas detectors.",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url="http://github.com/numat/midas/",
+    url="https://github.com/numat/midas/",
     author="Patrick Fuller",
     author_email="pat@numat-tech.com",
+    maintainer="Alex Ruddick",
+    maintainer_email="alex@numat-tech.com",
     packages=['midas'],
     package_data={'midas': ['faults.csv', 'py.typed']},
     install_requires=[
