@@ -132,7 +132,8 @@ class AsyncioModbusClient:
                 else:
                     future = getattr(self.client.protocol, method)  # type: ignore
                 return await future(*args, **kwargs)
-            except (asyncio.TimeoutError, pymodbus.exceptions.ConnectionException) as e:
+            except (asyncio.TimeoutError, pymodbus.exceptions.ConnectionException,
+                    AttributeError) as e:
                 raise TimeoutError("Not connected to Midas.") from e
 
     async def _close(self) -> None:
