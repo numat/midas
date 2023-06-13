@@ -126,8 +126,6 @@ class AsyncioModbusClient:
         """
         await self.connectTask
         async with self.lock:
-            if not self.client.connected:
-                raise ConnectionError("Not connected to Midas.")
             try:
                 if self.pymodbus32plus:
                     future = getattr(self.client, method)

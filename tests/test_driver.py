@@ -42,7 +42,7 @@ def test_driver_cli(capsys):
 
 def test_driver_cli_timeout():
     """Confirm the commandline raises ConnectionError on failure to connect."""
-    with pytest.raises(ConnectionError):
+    with pytest.raises(TimeoutError):
         command_line(["fakeip"])
 
 
