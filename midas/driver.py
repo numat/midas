@@ -85,9 +85,11 @@ class GasDetector(AsyncioModbusClient):
     def _parse(self, registers: list) -> dict:
         """Parse the response, returning a dictionary."""
         result: dict = {'ip': self.ip, 'connected': True}
+        bigendian = Endian.BIG if self.pymodbus35plus else Endian.Big  # type:ignore[attr-defined]
+        lilendian = Endian.LITTLE if self.pymodbus35plus else Endian.Little  # type:ignore
         decoder = BinaryPayloadDecoder.fromRegisters(registers,
-                                                     byteorder=Endian.Big,
-                                                     wordorder=Endian.Little)
+                                                     byteorder=bigendian,
+                                                     wordorder=lilendian)
         # Register 40001 is a collection of alarm status signals
         b = [decoder.decode_bits(), decoder.decode_bits()]
         reg_40001 = b[1] + b[0]
