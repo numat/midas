@@ -1,5 +1,7 @@
+exclude = ["venv*"]
 line-length = 99
-ignore = [
+target-version = "py38"
+lint.ignore = [
     "PLR2004", # Magic value used in comparison, consider replacing {value} with a constant variable
     "D104",    # Missing docstring in public package
     "D107",    # Missing docstring in __init__
@@ -7,8 +9,7 @@ ignore = [
     "PT023",   # Use `@pytest.mark.asyncio()` over `@pytest.mark.asyncio`
     "UP036",   # Version block is outdated for minimum Python version
 ]
-exclude = ["venv*"]
-select = [
+lint.select = [
     "B",   # bandit
     "C",   # complexity
     "D",   # docstrings
@@ -23,8 +24,7 @@ select = [
     "YTT", # flake8-2020
     # "ARG", # flake8-unused args
 ]
-target-version = "py38"
-[pydocstyle]
+[lint.pydocstyle]
 convention = "pep257"
-[flake8-unused-arguments]
+[lint.flake8-unused-arguments]
 ignore-variadic-names = true
