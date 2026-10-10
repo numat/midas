@@ -33,7 +33,7 @@ setup(
             'pytest',
             'pytest-cov',
             'pytest-asyncio',
-            'ruff==0.15.20',
+            'ruff==0.17.0',
         ],
     },
     entry_points={
